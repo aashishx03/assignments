@@ -15,17 +15,17 @@ function removeSpaceAndPunctuation(str) {
 }
 
 function isPalindrome(str) {
+  // Reversing the Strign
   let reverseStr = "";
   for (let i = str.length - 1; i >= 0; i--) {
     reverseStr += str[i];
   }
 
+  // Using Another function to remove spaces and puncutation mark
   const revStr = removeSpaceAndPunctuation(reverseStr);
   const newStr = removeSpaceAndPunctuation(str);
 
-  console.log(newStr);
-  console.log(revStr);
-
+  // Returning Value
   if (revStr != newStr) return false;
 
   return true;

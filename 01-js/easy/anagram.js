@@ -6,13 +6,14 @@
 
 function isAnagram(str1, str2) {
   if (str1.length != str2.length) return false;
-  let str2Arr = str2.toLowerCase().split("");
-  for (let key of str1) {
-    if (!str2Arr.includes(key.toLowerCase())) return false;
+  let str = str2.toLowerCase();
+  for (const key of str1) {
+    if (!str.includes(key.toLowerCase())) return false;
   }
+
   return true;
 }
 
-console.log(isAnagram("Debit Card", "Bad Credit"));
+console.log(isAnagram("spar", "rasp"));
 
 module.exports = isAnagram;
