@@ -39,11 +39,104 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+const express = require("express");
+const mongoose = require("mongoose");
+
+require("dotenv").config();
+
+const app = express();
+
+app.use(express.json());
+
+mongoose
+  .connect(process.env.DB_URI)
+  .then(() => {
+    console.log("Db is connected");
+    app.listen(process.env.PORT || 3000, () => {
+      console.log("App is running");
+    });
+  })
+  .catch((err) => {
+    console.log("Error connetingc to DB:" + err);
+  });
+
+// Setting model/schema for todos
+
+const todoSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  completed: { type: Boolean, required: true },
+});
+
+const Todo = mongoose.model("Todo", todoSchema);
+
+// 1.GET /todos - Retrieve all todo items
+app.get("/todos", async (req, res) => {
+  const data = await Todo.find();
+  res.status(200).json({ data });
+});
+
+// 2.GET /todos/:id - Retrieve a specific todo item by ID
+app.get("/todos/:id", async (req, res) => {
+  try {
+    const todoId = req.params.id;
+    const todo = await Todo.findById(todoId);
+    if (!todo) {
+      res.status(404).json({ message: "Todo not Find" });
+    }
+    res.status(200).json(todo);
+  } catch (err) {
+    console.log(err);
+    res.send("Server Error");
+  }
+});
+
+// 3. POST /todos - Create a new todo item
+app.post("/todos", async (req, res) => {
+  try {
+    const todo = await Todo.create(req.body);
+    res.status(201).json(todo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// 4. PUT /todos/:id - Update an existing todo item by ID
+app.put("/todos/:id", async (req, res) => {
+  try {
+    const todoId = req.params.id;
+    console.log(typeof todoId);
+    const updateTodo = await Todo.findByIdAndUpdate(todoId, req.body, {
+      new: true,
+    });
+
+    if (!updateTodo) {
+      res.send(404).json({ message: "Todo Not Found" });
+    }
+
+    res.json(updateTodo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+// 5. DELETE /todos/:id - Delete a todo item by ID
+
+app.delete("/todos/:id", async (req, res) => {
+  try {
+    const todoId = req.params.id;
+    const todo = await Todo.findByIdAndDelete(todoId);
+
+    if (!todo) {
+      res.status(404).json({ message: "Todo not Found" });
+    }
+
+    res.json({ message: "Todo Deleted", todo });
+  } catch (err) {
+    console.error(err);
+    res.status(400).send("Server Error");
+  }
+});
+
+module.exports = app;
